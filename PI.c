@@ -91,6 +91,19 @@ int tentar_mover (Estado atual, int mapa[N][N], int d, Estado *novo){
     return 1;
 }
 
+int gerar_sucessores(Estado atual, int mapa[N][N], Estado filhos[4]){
+    int desloc[4] = {-N, N, -1, 1};   // cima, baixo, esquerda, direita
+    int qtd = 0, i;
+
+    for(i = 0; i < 4; i++){
+       if(tentar_mover(atual, mapa, desloc[i], &filhos[qtd]) == 1){
+            qtd++;
+        }
+       
+    }
+    return qtd;    
+}
+
 void criar_mapa(int mapa[N][N], int nivel){
     
     int j, i;
