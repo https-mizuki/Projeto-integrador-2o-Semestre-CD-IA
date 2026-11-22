@@ -3,6 +3,7 @@
 #define MAX_CAIXAS 3
 #define PAREDE 1
 #define SEM_CAIXA -1
+#define ALVO 4
 
 typedef struct estado {
     int jogador;
@@ -102,6 +103,19 @@ int gerar_sucessores(Estado atual, int mapa[N][N], Estado filhos[4]){
        
     }
     return qtd;    
+}
+
+int eh_objetivo(Estado e, int mapa[N][N]){
+    for(int i = 0; i < e.qtd_caixas; i++){
+        int posicao = e.caixas[i];
+        int linha = posicao / N;
+        int coluna = posicao % N;
+        if (mapa[linha][coluna] != ALVO){
+            return 0; 
+        }
+    }
+    return 1;
+ 
 }
 
 void criar_mapa(int mapa[N][N], int nivel){
