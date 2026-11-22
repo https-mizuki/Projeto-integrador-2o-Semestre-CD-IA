@@ -1,0 +1,29 @@
+# Arquivos compilados
+*.exe
+*.out
+*.o
+*.obj
+*.a
+*.so
+*.dll
+*.lib
+
+# Dependencias e saidas de build
+/build/
+/dist/
+/bin/
+/obj/
+
+# Arquivos temporarios
+*.tmp
+*.temp
+*.log
+*.bak
+*~
+
+# Configuracoes locais do VS Code
+.vscode/
+
+# Configuracoes locais do sistema
+.DS_Store
+Thumbs.db
