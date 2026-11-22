@@ -15,9 +15,16 @@ typedef struct estado {
 typedef struct no{
     Estado estado;
     struct no *pai;
+    struct no *prox;
     int g;
     int f;
-}No;
+} No;
+
+typedef struct fila{
+    No *inicio;
+    No *fim;
+} Fila;
+
 
 typedef struct posicao {
     int linha;
@@ -26,15 +33,13 @@ typedef struct posicao {
 
 No *criar_no(Estado e, No *pai, int custo_passo){
     No *novo = (No*) malloc(sizeof(No));
-   
     if (novo == NULL){
         printf("Sem memoria para o malloc\n");
         exit(1);
     }
-
     novo -> estado = e;
     novo -> pai = pai;
-
+    novo -> prox = NULL;
     if (pai != NULL){
         novo -> g = pai -> g + custo_passo;
     }
@@ -208,9 +213,6 @@ void criar_mapa(int mapa[N][N], int nivel){
 int main(){
     // Codigos: 0 = chao | 1 = parede | 2 = jogador | 3 = caixa | 4 = alvo
     int tabuleiro[N][N], i, j;
-
-    No *raiz  = criar_no(inicial, NULL, 0);     // custo do passo 0
-    No *filho = criar_no(sucessor, atual, 1);   // so o passo, a funcao soma o g do pai
 
     // Inicializando o mapa com a func
     criar_mapa(tabuleiro, 1);
