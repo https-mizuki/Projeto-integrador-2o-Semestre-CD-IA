@@ -1,4 +1,5 @@
 #include<stdio.h>
+#include<stdlib.h>
 #define N 9 
 #define MAX_CAIXAS 3
 #define PAREDE 1
@@ -11,10 +12,41 @@ typedef struct estado {
     int qtd_caixas;
 } Estado;
 
+typedef struct no{
+    Estado estado;
+    struct no *pai;
+    int g;
+    int f;
+}No;
+
 typedef struct posicao {
     int linha;
     int coluna;
 } Posicao;
+
+No *criar_no(Estado e, No *pai, int custo_passo){
+    No *novo = (No*) malloc(sizeof(No));
+   
+    if (novo == NULL){
+        printf("Sem memoria para o malloc\n");
+        exit(1);
+    }
+
+    novo -> estado = e;
+    novo -> pai = pai;
+
+    if (pai != NULL){
+        novo -> g = pai -> g + custo_passo;
+    }
+    else {
+        novo -> g = custo_passo;    
+    }
+    novo -> f = novo -> g; 
+
+    return novo;
+}
+
+
 
 Estado ler_estado_inicial(int mapa [N][N]){
     Estado e;
@@ -176,6 +208,9 @@ void criar_mapa(int mapa[N][N], int nivel){
 int main(){
     // Codigos: 0 = chao | 1 = parede | 2 = jogador | 3 = caixa | 4 = alvo
     int tabuleiro[N][N], i, j;
+
+    No *raiz  = criar_no(inicial, NULL, 0);     // custo do passo 0
+    No *filho = criar_no(sucessor, atual, 1);   // so o passo, a funcao soma o g do pai
 
     // Inicializando o mapa com a func
     criar_mapa(tabuleiro, 1);
