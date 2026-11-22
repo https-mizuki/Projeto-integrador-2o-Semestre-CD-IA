@@ -8,12 +8,12 @@ typedef struct estado {
     int jogador;
     int caixas[MAX_CAIXAS];
     int qtd_caixas;
-}Estado;
+} Estado;
 
 typedef struct posicao {
     int linha;
     int coluna;
-}Posicao;
+} Posicao;
 
 Estado ler_estado_inicial(int mapa [N][N]){
     Estado e;
@@ -79,14 +79,16 @@ int tentar_mover (Estado atual, int mapa[N][N], int d, Estado *novo){
     //caso 2: tem caixa no destino 
     int k = achar_caixa(atual, destino);
     if (k != SEM_CAIXA){
+        int atras;
         atras = destino + d;
         //nao permite empurrar duas caixas ou mais e nao permite empurrar paredes
         if(eh_parede(mapa, atras) == PAREDE || achar_caixa(atual, atras) != SEM_CAIXA ){
             return 0;
         }
-        novo->jogador = destino;
-        
+        novo->caixas[k] = atras;
     }
+    novo->jogador = destino;
+    return 1;
 }
 
 void criar_mapa(int mapa[N][N], int nivel){
