@@ -87,6 +87,21 @@ No *fila_remover(Fila *f){
     return removido;
 }
 
+int estados_iguais (Estado a, Estado b){
+    if (a.jogador != b.jogador){
+        return 0;
+    }
+    if (a.qtd_caixas != b.qtd_caixas){
+        return 0;
+    }
+    for(int i = 0; i < a.qtd_caixas; i++){
+        if (a.caixas[i] != b.caixas[i]){
+            return 0;
+        }
+    }
+    return 1;
+}
+
 No *criar_no(Estado e, No *pai, int custo_passo){
     No *novo = (No*) malloc(sizeof(No));
     if (novo == NULL){
@@ -107,7 +122,18 @@ No *criar_no(Estado e, No *pai, int custo_passo){
     return novo;
 }
 
-
+void ordenar_caixas(Estado *e){
+    int i, j, temp;
+    for (i = 0; i < e->qtd_caixas -1; i++){
+        for (j = 0; j < e->qtd_caixas - i -1; j++){
+            if (e->caixas[j] > e->caixas[j+1]){
+                temp = e->caixas[j];
+                e->caixas[j] = e->caixas[j+1];
+                e->caixas[j+1] = temp;
+            }
+        }
+    }
+}
 
 Estado ler_estado_inicial(int mapa [N][N]){
     Estado e;
@@ -180,6 +206,7 @@ int tentar_mover (Estado atual, int mapa[N][N], int d, Estado *novo){
             return 0;
         }
         novo->caixas[k] = atras;
+        ordenar_caixas(novo);
     }
     novo->jogador = destino;
     return 1;
