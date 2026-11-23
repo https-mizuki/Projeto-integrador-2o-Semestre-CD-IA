@@ -344,11 +344,67 @@ int fechados_contem(No *fechados, Estado e){
 
 void resolver_astar(Estado inicial, int mapa[N][N]){
     // TODO: iniciar a fila, criar a raiz com f = g + h e inserir
-    
-    // TODO: laco: remover, descartar se ja fechado, fechar, testar objetivo, gerar filhos
-    // TODO: filhos: pular deadlock e fechados, criar_no, f = g + h, inserir
-    // TODO: imprimir passos, custo, nos expandidos, nos gerados e tempo em ms
-    // TODO: liberar fechados e fila
+    Fila fila;
+    No *fechados = NULL, *solucao = NULL, *raiz, *atual, *novo, *p;
+    Estado filhos[4];
+    long expandidos = 0, gerados = 0;
+    int qtd, i;
+    clock_t t0, t1;
+    double ms;
+    //relogio começa junto com o algoritmo
+    t0 = clock();
+    fila_iniciar(&fila);
+    raiz = criar_no(inicial, NULL, 0);
+    raiz -> f = raiz -> g + heuristica(inicial, mapa);
+    fila_inserir(&fila, raiz);
+    gerados++;
+   while(fila_vazia(&fila) == 0){
+        atual = fila_remover(&fila);
+        if(fechados_contem(fechados, atual->estado) == 1){
+            free(atual);
+            continue;
+        }
+        atual->prox = fechados;
+        fechados = atual;
+        expandidos++;
+        if (eh_objetivo(atual->estado, mapa) == 1){
+            solucao = atual;
+            break;
+        }
+        qtd = gerar_sucessores(atual->estado, mapa, filhos);
+        for (i = 0; i < qtd ; i++){
+            if (eh_deadlock(filhos[i], mapa) == 1){
+                continue;
+            } else if (fechados_contem(fechados, filhos[i]) == 1){
+                continue;
+            } else {
+                novo = criar_no(filhos[i], atual, 1);
+                novo->f = novo->g + heuristica(filhos[i], mapa);
+                fila_inserir(&fila, novo);
+                gerados++;
+            }
+        }
+   }
+   t1 = clock();
+   ms = (double)(t1 - t0) * 1000.0 / CLOCKS_PER_SEC;
+   if (solucao != NULL){
+        printf("Solução encontrada!\n");
+        printf("Tempo de execução: %.2f ms\n", ms);
+        printf("Nós expandidos: %ld\n", expandidos);
+        printf("Nós gerados: %ld\n", gerados);
+        printf("Custo da solução: %d\n", solucao->g);
+   } else {
+        printf("Solução não encontrada!\n");
+        printf("Tempo de execução: %.2f ms\n", ms);
+        printf("Nós expandidos: %ld\n", expandidos);
+        printf("Nós gerados: %ld\n", gerados);
+   }
+   for(p = fechados; p != NULL;){
+        No *temp = p;
+        p = p->prox;
+        free(temp);
+   }
+   free(fila_remover(&fila));
 }
 
 int main(){
