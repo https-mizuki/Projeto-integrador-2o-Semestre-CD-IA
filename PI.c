@@ -308,22 +308,43 @@ int parede_segura(int mapa[N][N], int pos){
     if (mapa[pos / N][pos % N] == PAREDE) {
         return 1; // É uma parede
     }
-    
+
     return 0;
 }
 
 int eh_deadlock(Estado e, int mapa[N][N]){
     // TODO: 1 se alguma caixa fora de um alvo estiver presa em um canto
+    for (int i = 0; i < e.qtd_caixas; i++){
+        int pos = e.caixas[i];
+        int linha = pos / N;
+        int coluna = pos % N;
+        if (mapa[linha][coluna] != ALVO){
+            // Verifica se a caixa está em um canto
+            if ((parede_segura(mapa, pos - 1) && parede_segura(mapa, pos - N)) || // Canto superior esquerdo
+                (parede_segura(mapa, pos + 1) && parede_segura(mapa, pos - N)) || // Canto superior direito
+                (parede_segura(mapa, pos - 1) && parede_segura(mapa, pos + N)) || // Canto inferior esquerdo
+                (parede_segura(mapa, pos + 1) && parede_segura(mapa, pos + N))) { // Canto inferior direito
+                return 1; // Deadlock encontrado
+            }
+        }
+    }
     return 0;
 }
 
 int fechados_contem(No *fechados, Estado e){
     // TODO: percorrer a lista pelo prox usando estados_iguais
+    No *p = fechados;
+    for (; p != NULL; p = p->prox){
+        if (estados_iguais(p->estado, e) == 1){
+            return 1;
+        }
+    }
     return 0;
 }
 
 void resolver_astar(Estado inicial, int mapa[N][N]){
     // TODO: iniciar a fila, criar a raiz com f = g + h e inserir
+    
     // TODO: laco: remover, descartar se ja fechado, fechar, testar objetivo, gerar filhos
     // TODO: filhos: pular deadlock e fechados, criar_no, f = g + h, inserir
     // TODO: imprimir passos, custo, nos expandidos, nos gerados e tempo em ms
