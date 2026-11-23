@@ -31,6 +31,62 @@ typedef struct posicao {
     int coluna;
 } Posicao;
 
+int tem_prioridade(No *a, No *b){
+    if(a->f < b->f){
+        return 1;
+    }
+    else if(a->f == b->f && a->g > b->g){
+        return 1;
+    }
+    return 0;
+}
+
+void fila_iniciar(Fila *f){
+    f->inicio = NULL;
+    f->fim = NULL;
+}
+
+int fila_vazia(Fila *f){
+    if (f->inicio == NULL){
+        return 1;
+    }
+    return 0;
+}
+// vai inserindo na fila por prioridade, ou seja, o nó com menor f vai para o início da fila
+void fila_inserir(Fila *f, No *novo){
+    if (fila_vazia(f) == 1){
+        f->inicio = novo;
+        f->fim = novo;
+    } else if(tem_prioridade(novo, f->inicio) == 1){
+        novo -> prox = f->inicio;
+        f->inicio = novo;
+    } else if (tem_prioridade(novo, f->fim) == 0){
+        f->fim -> prox = novo;
+        f->fim = novo;
+    } else {
+        No *atual = f->inicio;
+        while(tem_prioridade(novo, atual->prox) == 0){
+            atual = atual -> prox;
+        }
+        novo -> prox = atual -> prox;
+        atual -> prox = novo;
+    }
+}
+
+No *fila_remover(Fila *f){
+    No *removido = f->inicio;
+    if (fila_vazia(f) == 1){
+        printf("Fila vazia, nao ha elementos para remover\n");
+        return NULL;
+    } else if (f->inicio == f->fim){
+        f->inicio = NULL;
+        f->fim = NULL;
+    } else {
+        f->inicio = removido -> prox;
+    }
+    return removido;
+}
+
 No *criar_no(Estado e, No *pai, int custo_passo){
     No *novo = (No*) malloc(sizeof(No));
     if (novo == NULL){
