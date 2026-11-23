@@ -277,12 +277,39 @@ int eh_objetivo(Estado e, int mapa[N][N]){
 
 int heuristica(Estado e, int mapa[N][N]){
     // TODO: soma da menor distancia de Manhattan de cada caixa ate um ALVO
-    return 0;
+    int h = 0;
+    int linha_caixa, coluna_caixa, linha_alvo, coluna_alvo;
+    for(int i = 0; i < e.qtd_caixas; i++){
+        linha_caixa = e.caixas[i] / N;
+        coluna_caixa = e.caixas[i] % N;
+        int menor_distancia = INF;
+        for(int linha = 0; linha < N; linha++){
+            for(int coluna = 0; coluna < N; coluna++){
+                if(mapa[linha][coluna] == ALVO){
+                    linha_alvo = linha;
+                    coluna_alvo = coluna;
+                    int distancia = abs(linha_caixa - linha_alvo) + abs(coluna_caixa - coluna_alvo);
+                    if(distancia < menor_distancia){
+                        menor_distancia = distancia;
+                    }
+                }
+            }
+        }
+        h += menor_distancia;
+    }
+    return h;
 }
 
 int parede_segura(int mapa[N][N], int pos){
     // TODO: 1 se pos estiver fora do mapa ou for parede
-    return 1;
+    if (pos < 0 || pos >= N * N) {
+        return 1; // Fora do mapa
+    }
+    if (mapa[pos / N][pos % N] == PAREDE) {
+        return 1; // É uma parede
+    }
+    
+    return 0;
 }
 
 int eh_deadlock(Estado e, int mapa[N][N]){
