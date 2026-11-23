@@ -1,5 +1,6 @@
 #include<stdio.h>
 #include<stdlib.h>
+#include<locale.h>
 #include<time.h>
 #define N 9
 #define MAX_CAIXAS 3
@@ -275,29 +276,56 @@ int eh_objetivo(Estado e, int mapa[N][N]){
     return 1;
 }
 
-int heuristica(Estado e, int mapa[N][N]){
-    // TODO: soma da menor distancia de Manhattan de cada caixa ate um ALVO
-    int h = 0;
-    int linha_caixa, coluna_caixa, linha_alvo, coluna_alvo;
-    for(int i = 0; i < e.qtd_caixas; i++){
-        linha_caixa = e.caixas[i] / N;
-        coluna_caixa = e.caixas[i] % N;
-        int menor_distancia = INF;
-        for(int linha = 0; linha < N; linha++){
-            for(int coluna = 0; coluna < N; coluna++){
-                if(mapa[linha][coluna] == ALVO){
-                    linha_alvo = linha;
-                    coluna_alvo = coluna;
-                    int distancia = abs(linha_caixa - linha_alvo) + abs(coluna_caixa - coluna_alvo);
-                    if(distancia < menor_distancia){
-                        menor_distancia = distancia;
-                    }
-                }
+// Encontra e armazena as posições de todos os alvos do mapa.
+int achar_alvos(int mapa[N][N], int alvos[]){
+    int qtd = 0;
+    int i, j;
+
+    for(i = 0; i < N; i++){
+        for(j = 0; j < N; j++){
+            if(mapa[i][j] == ALVO){
+                alvos[qtd] = i * N + j;
+                qtd++;
             }
         }
-        h += menor_distancia;
     }
-    return h;
+
+    return qtd;
+}
+
+// Calcula a distância de Manhattan entre duas posições do tabuleiro.
+int distancia(int pos1, int pos2){
+    int linha1 = pos1 / N;
+    int coluna1 = pos1 % N;
+    int linha2 = pos2 / N;
+    int coluna2 = pos2 % N;
+
+    int dif_linha = abs(linha1 - linha2);
+    int dif_coluna = abs(coluna1 - coluna2);
+
+    return dif_linha + dif_coluna;
+}
+
+// Soma, para cada caixa, a distância até o alvo mais próximo.
+int heuristica(Estado e, int alvos[], int qtd_alvos){
+    int total = 0;
+    int k, a;
+
+    for(k = 0; k < e.qtd_caixas; k++){
+        int menor = INF;
+
+        for(a = 0; a < qtd_alvos; a++){
+            int d = distancia(e.caixas[k], alvos[a]);
+
+            if(d < menor){
+                menor = d;
+            }
+        }
+
+        total += menor;
+    }
+
+    return total;
 }
 
 int parede_segura(int mapa[N][N], int pos){
@@ -349,13 +377,16 @@ void resolver_astar(Estado inicial, int mapa[N][N]){
     Estado filhos[4];
     long expandidos = 0, gerados = 0;
     int qtd, i;
+    int alvos[N * N];
+    int qtd_alvos;
     clock_t t0, t1;
     double ms;
     //relogio começa junto com o algoritmo
     t0 = clock();
+    qtd_alvos = achar_alvos(mapa, alvos);
     fila_iniciar(&fila);
     raiz = criar_no(inicial, NULL, 0);
-    raiz -> f = raiz -> g + heuristica(inicial, mapa);
+    raiz -> f = raiz -> g + heuristica(inicial, alvos, qtd_alvos);
     fila_inserir(&fila, raiz);
     gerados++;
    while(fila_vazia(&fila) == 0){
@@ -379,7 +410,7 @@ void resolver_astar(Estado inicial, int mapa[N][N]){
                 continue;
             } else {
                 novo = criar_no(filhos[i], atual, 1);
-                novo->f = novo->g + heuristica(filhos[i], mapa);
+                novo->f = novo->g + heuristica(filhos[i], alvos, qtd_alvos);
                 fila_inserir(&fila, novo);
                 gerados++;
             }
@@ -407,23 +438,67 @@ void resolver_astar(Estado inicial, int mapa[N][N]){
    free(fila_remover(&fila));
 }
 
-int main(){
-    // Codigos: 0 = chao | 1 = parede | 2 = jogador | 3 = caixa | 4 = alvo
-    int tabuleiro[N][N], i, j;
+// Mostra o tabuleiro de forma visual, em vez de imprimir apenas os codigos.
+void imprimir_mapa(int mapa[N][N]){
+    int i, j;
 
-    criar_mapa(tabuleiro, 1);
-    for(i=0; i<N; i++){
-        for(j=0; j<N; j++){
-            printf("%d  ", tabuleiro[i][j]);
+    printf("   ");
+    for(j = 0; j < N; j++){
+        printf("%2d ", j);
+    }
+    printf("\n");
+
+    for(i = 0; i < N; i++){
+        printf("%2d ", i);
+        for(j = 0; j < N; j++){
+            if(mapa[i][j] == PAREDE){
+                printf(" ##");
+            } else if(mapa[i][j] == 2){
+                printf(" @ ");
+            } else if(mapa[i][j] == 3){
+                printf(" $ ");
+            } else if(mapa[i][j] == ALVO){
+                printf(" . ");
+            } else {
+                printf("   ");
+            }
         }
         printf("\n");
     }
+}
 
-    Estado e = ler_estado_inicial(tabuleiro);
-    printf("jogador: %d\n", e.jogador);
-    printf("quantidade de caixas: %d\n", e.qtd_caixas);
+int main(){
+    // Codigos: 0 = chao | 1 = parede | 2 = jogador | 3 = caixa | 4 = alvo
+    setlocale(LC_ALL, "Portuguese");
+    int tabuleiro[N][N];
+    Estado inicial;
 
-    resolver_astar(e, tabuleiro);
+    printf("====================================\n");
+    printf("       SOKOBAN - ALGORITMO A*       \n");
+    printf("====================================\n\n");
 
-    return 0;
+    // Cria o nivel definido na funcao criar_mapa.
+    criar_mapa(tabuleiro, 1);
+
+    printf("Tabuleiro inicial:\n");
+    imprimir_mapa(tabuleiro);
+
+    // Extrai jogador e caixas do mapa. A matriz fica com paredes, chao e alvos.
+    inicial = ler_estado_inicial(tabuleiro);
+
+    printf("\nDados do estado inicial:\n");
+    printf("Posicao do jogador: linha %d, coluna %d\n",
+           inicial.jogador / N, inicial.jogador % N);
+    printf("Quantidade de caixas: %d\n", inicial.qtd_caixas);
+
+    if(inicial.qtd_caixas <= 0 || inicial.qtd_caixas > MAX_CAIXAS){
+        printf("Erro: quantidade de caixas invalida para este programa.\n");
+        return EXIT_FAILURE;
+    }
+
+    printf("\nIniciando a busca A*...\n\n");
+    resolver_astar(inicial, tabuleiro);
+
+    printf("\nFim do teste.\n");
+    return EXIT_SUCCESS;
 }
